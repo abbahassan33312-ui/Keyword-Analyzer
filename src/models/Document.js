@@ -1,11 +1,12 @@
-//src/models/Document.js
-
 import mongoose from "mongoose";
 
 const DocumentSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
+    domain: { type: String },
+    sourceType: { type: String },
+    sourceId: { type: String },
     keywords: [
       {
         keyword: String,
@@ -14,7 +15,7 @@ const DocumentSchema = new mongoose.Schema(
     ],
     analyzedAt: { type: Date },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export default mongoose.models.Document ||

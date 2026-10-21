@@ -6,9 +6,6 @@ export default function HomePage() {
     <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-12">
       {/* Hero Section */}
       <div className="space-y-6 max-w-3xl">
-        <span className="inline-block py-1 px-3 rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold mb-2">
-          Final Year Project Showcase
-        </span>
         <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900">
           Unlock Insights with <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Domain-Specific</span> Keyword Analysis
         </h1>

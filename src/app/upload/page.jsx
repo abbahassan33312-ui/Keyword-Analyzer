@@ -1,3 +1,4 @@
+// src/app/upload/page.jsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -17,7 +18,7 @@ export default function UploadPage() {
                     Add New Document
                 </h1>
                 <p className="mt-2 text-gray-600">
-                    Paste your educational content below to add it to your dashboard.
+                    Upload a PDF or paste your educational content below to add it to your dashboard.
                 </p>
             </div>
 

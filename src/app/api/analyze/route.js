@@ -1,12 +1,8 @@
-//src/app/api/analyze/route.js
-
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Document from "@/models/Document";
 import { extractKeywords } from "@/lib/keywordExtractor";
 
-// POST /api/analyze
-// Body: { documentId: "..." }
 export async function POST(request) {
   await dbConnect();
   const { documentId } = await request.json();

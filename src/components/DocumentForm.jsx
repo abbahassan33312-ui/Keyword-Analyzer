@@ -67,31 +67,44 @@ export default function DocumentForm({ onSaved }) {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 space-y-6">
-            <div className="bg-indigo-50/50 border-2 border-dashed border-indigo-200 rounded-xl p-6 text-center hover:bg-indigo-50 transition-colors">
+        <form onSubmit={handleSubmit} className="bg-[#05052e]/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-blue-500/30 space-y-6">
+
+            {/* PDF Upload Section */}
+            <div className="bg-blue-900/30 border-2 border-dashed border-blue-400/50 rounded-xl p-6 text-center hover:bg-blue-800/40 transition-colors">
                 <input type="file" accept=".pdf" onChange={handleFileUpload} className="hidden" id="pdf-upload" disabled={extracting} />
                 <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-2">
-                    {extracting ? <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" /> : <UploadCloud className="w-8 h-8 text-indigo-600" />}
-                    <span className="text-sm font-semibold text-indigo-700">{extracting ? "Extracting text from PDF..." : "Click to upload a PDF"}</span>
-                    <span className="text-xs text-gray-500">We will automatically extract the text for you</span>
+                    {extracting ? <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" /> : <UploadCloud className="w-8 h-8 text-yellow-400" />}
+                    <span className="text-sm font-semibold text-white">{extracting ? "Extracting text from PDF..." : "Click to upload a PDF"}</span>
+                    <span className="text-xs text-blue-300">We will automatically extract the text for you</span>
                 </label>
             </div>
 
             <div className="relative flex items-center py-2">
-                <div className="flex-grow border-t border-gray-200"></div>
-                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR PASTE MANUALLY</span>
-                <div className="flex-grow border-t border-gray-200"></div>
+                <div className="flex-grow border-t border-blue-500/30"></div>
+                <span className="flex-shrink-0 mx-4 text-blue-300 text-xs font-bold tracking-wider uppercase">Or paste manually</span>
+                <div className="flex-grow border-t border-blue-500/30"></div>
             </div>
 
             <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Document Title</label>
-                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g., Introduction to Data Science" className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3 bg-gray-50 border transition-colors" />
+                <label className="block text-sm font-semibold text-blue-100 mb-2">Document Title</label>
+                <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                    placeholder="e.g., Introduction to Data Science"
+                    className="block w-full rounded-xl border border-blue-500/50 focus:border-yellow-400 focus:ring-yellow-400 px-4 py-3 bg-[#02021c] text-white placeholder-blue-500/70 transition-colors"
+                />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Domain</label>
-                    <select value={domain} onChange={(e) => setDomain(e.target.value)} className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3 bg-gray-50 border">
+                    <label className="block text-sm font-semibold text-blue-100 mb-2">Domain</label>
+                    <select
+                        value={domain}
+                        onChange={(e) => setDomain(e.target.value)}
+                        className="block w-full rounded-xl border border-blue-500/50 focus:border-yellow-400 focus:ring-yellow-400 px-4 py-3 bg-[#02021c] text-white transition-colors"
+                    >
                         <option value="Computer Science">Computer Science</option>
                         <option value="Information Systems">Information Systems</option>
                         <option value="Data Analytics">Data Analytics</option>
@@ -99,8 +112,12 @@ export default function DocumentForm({ onSaved }) {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Source Type</label>
-                    <select value={sourceType} onChange={(e) => setSourceType(e.target.value)} className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3 bg-gray-50 border">
+                    <label className="block text-sm font-semibold text-blue-100 mb-2">Source Type</label>
+                    <select
+                        value={sourceType}
+                        onChange={(e) => setSourceType(e.target.value)}
+                        className="block w-full rounded-xl border border-blue-500/50 focus:border-yellow-400 focus:ring-yellow-400 px-4 py-3 bg-[#02021c] text-white transition-colors"
+                    >
                         <option value="Course Syllabus">Course Syllabus</option>
                         <option value="Scholarly Abstract">Scholarly Abstract</option>
                         <option value="Search Query Log">Search Query Log</option>
@@ -109,14 +126,25 @@ export default function DocumentForm({ onSaved }) {
             </div>
 
             <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
+                <label className="block text-sm font-semibold text-blue-100 mb-2 flex items-center justify-between">
                     <span>Educational Content</span>
-                    {content && <span className="text-xs text-green-600 flex items-center gap-1"><FileText className="w-3 h-3" /> Text Loaded</span>}
+                    {content && <span className="text-xs text-green-400 flex items-center gap-1"><FileText className="w-3 h-3" /> Text Loaded</span>}
                 </label>
-                <textarea rows={8} value={content} onChange={(e) => setContent(e.target.value)} required placeholder="Paste syllabus, abstract, or course description here..." className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3 bg-gray-50 border transition-colors resize-none" />
+                <textarea
+                    rows={8}
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    required
+                    placeholder="Paste syllabus, abstract, or course description here..."
+                    className="block w-full rounded-xl border border-blue-500/50 focus:border-yellow-400 focus:ring-yellow-400 px-4 py-3 bg-[#02021c] text-white placeholder-blue-500/70 transition-colors resize-none"
+                />
             </div>
 
-            <button type="submit" disabled={loading || extracting} className="w-full flex justify-center items-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-white font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 transition-all shadow-lg">
+            <button
+                type="submit"
+                disabled={loading || extracting}
+                className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#FACC15] px-4 py-3 text-[#00008B] font-bold text-lg hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 focus:ring-offset-[#05052e] disabled:opacity-70 transition-all shadow-lg"
+            >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                 {loading ? "Saving..." : "Save Document"}
             </button>

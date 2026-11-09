@@ -1,17 +1,27 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import KeywordTable from "@/components/KeywordTable";
-import { FileText, Tags, Loader2, BarChart3, Filter } from "lucide-react";
+import { FileText, Tags, Loader2, BarChart3, Filter, Search, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+
+// Helper to escape regex special characters for highlighting
+const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export default function DashboardPage() {
   const [documents, setDocuments] = useState([]);
   const [selected, setSelected] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
 
+  // Filters
   const [domainFilter, setDomainFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [keywordSearch, setKeywordSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Highlighting
+  const [highlightedWord, setHighlightedWord] = useState(null);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     fetch("/api/documents")
@@ -22,13 +32,37 @@ export default function DashboardPage() {
       });
   }, []);
 
+  // Extract ALL unique keywords for the searchable dropdown
+  const allUniqueKeywords = useMemo(() => {
+    const kwSet = new Set();
+    documents.forEach((doc) => {
+      doc.keywords?.forEach((kw) => kwSet.add(kw.keyword));
+    });
+    return Array.from(kwSet).sort();
+  }, [documents]);
+
+  // Filter the keyword dropdown based on search input
+  const filteredKeywordOptions = useMemo(() => {
+    if (!keywordSearch) return [];
+    return allUniqueKeywords.filter((kw) =>
+      kw.toLowerCase().includes(keywordSearch.toLowerCase())
+    ).slice(0, 10); // Show top 10 matches
+  }, [keywordSearch, allUniqueKeywords]);
+
+  // Filter documents based on sidebar filters AND global keyword search
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) => {
       const matchDomain = domainFilter === "All" || doc.domain?.trim() === domainFilter;
       const matchType = typeFilter === "All" || doc.sourceType?.trim() === typeFilter;
-      return matchDomain && matchType;
+
+      // If a keyword search is active, only show docs containing that keyword
+      const matchKeyword = !keywordSearch || doc.keywords?.some(
+        (k) => k.keyword.toLowerCase() === keywordSearch.toLowerCase()
+      );
+
+      return matchDomain && matchType && matchKeyword;
     });
-  }, [documents, domainFilter, typeFilter]);
+  }, [documents, domainFilter, typeFilter, keywordSearch]);
 
   const chartData = useMemo(() => {
     if (!selected || !selected.keywords || selected.keywords.length === 0) return [];
@@ -55,18 +89,42 @@ export default function DashboardPage() {
     setAnalyzing(false);
   }
 
+  // Scroll to highlighted word when it changes
+  useEffect(() => {
+    if (highlightedWord && contentRef.current) {
+      const el = document.getElementById("highlighted-word");
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [highlightedWord, selected]);
+
+  // Function to render text with highlighted keyword
+  const renderContent = (text, highlight) => {
+    if (!highlight) return text;
+    const regex = new RegExp(`(${escapeRegExp(highlight)})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <mark key={i} id="highlighted-word" className="bg-yellow-400 text-[#00008B] font-bold px-1 rounded shadow-sm">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  };
+
   const totalDocs = documents.length;
   const selectedKeywordsCount = selected?.keywords?.length || 0;
   const topKeyword = chartData.length > 0 ? chartData[0].name : "N/A";
 
   return (
     <div className="relative min-h-screen bg-[#00008B] overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
-      {/* Background Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff1a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff1a_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
 
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-white tracking-tight">Analytics Dashboard</h1>
           <p className="text-blue-200 mt-1">Overview of your analyzed educational content.</p>
@@ -138,8 +196,55 @@ export default function DashboardPage() {
           {/* Document Sidebar */}
           <div className="lg:col-span-4 bg-[#05052e]/90 backdrop-blur-md rounded-2xl shadow-lg border border-blue-500/30 overflow-hidden flex flex-col h-[650px]">
 
+            {/* Sidebar Filters */}
             <div className="p-4 border-b border-blue-500/30 bg-[#02021c] space-y-3">
               <h2 className="font-bold text-white flex items-center gap-2"><Filter className="w-4 h-4 text-yellow-400" /> Filter Library</h2>
+
+              {/* Searchable Keyword Dropdown */}
+              <div className="relative">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-blue-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search keywords..."
+                    value={keywordSearch}
+                    onChange={(e) => {
+                      setKeywordSearch(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    className="w-full text-xs pl-9 pr-8 py-2 border border-blue-500/50 rounded-lg bg-[#05052e] text-white focus:border-yellow-400 focus:outline-none"
+                  />
+                  {keywordSearch && (
+                    <button
+                      onClick={() => { setKeywordSearch(""); setShowDropdown(false); }}
+                      className="absolute right-2 top-2 text-blue-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Dropdown Options */}
+                {showDropdown && filteredKeywordOptions.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-[#05052e] border border-blue-500/50 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                    {filteredKeywordOptions.map((kw, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          setKeywordSearch(kw);
+                          setShowDropdown(false);
+                          setHighlightedWord(kw);
+                        }}
+                        className="px-4 py-2 text-xs text-blue-100 hover:bg-blue-900/60 cursor-pointer"
+                      >
+                        {kw}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-2">
                 <select
                   value={domainFilter}
@@ -167,12 +272,16 @@ export default function DashboardPage() {
 
             <div className="overflow-y-auto flex-1 p-2 space-y-1">
               {filteredDocuments.length === 0 && (
-                <p className="text-sm text-blue-300 p-4 text-center">No documents match filters.</p>
+                <p className="text-sm text-blue-300 p-4 text-center">No documents match your filters.</p>
               )}
               {filteredDocuments.map((doc) => (
                 <button
                   key={doc._id}
-                  onClick={() => setSelected(doc)}
+                  onClick={() => {
+                    setSelected(doc);
+                    // Auto-highlight the searched word if one is active
+                    if (keywordSearch) setHighlightedWord(keywordSearch);
+                  }}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-all flex flex-col group ${selected?._id === doc._id
                       ? "bg-blue-900/50 border border-yellow-400/50"
                       : "hover:bg-blue-900/30 border border-transparent"
@@ -208,14 +317,32 @@ export default function DashboardPage() {
                       {analyzing ? "Analyzing..." : "Extract Keywords"}
                     </button>
                   </div>
-                  <div className="prose prose-sm md:prose-base max-w-none text-blue-100 bg-[#02021c] p-6 rounded-xl border border-blue-500/30 whitespace-pre-line max-h-[300px] overflow-y-auto">
-                    {selected.content}
+
+                  {/* Document Content with Highlighting */}
+                  <div
+                    ref={contentRef}
+                    className="prose prose-sm md:prose-base max-w-none text-blue-100 bg-[#02021c] p-6 rounded-xl border border-blue-500/30 whitespace-pre-line max-h-[300px] overflow-y-auto"
+                  >
+                    {renderContent(selected.content, highlightedWord)}
                   </div>
                 </div>
 
                 <div className="bg-[#05052e]/90 backdrop-blur-md rounded-2xl shadow-lg border border-blue-500/30 p-8">
-                  <h3 className="text-xl font-bold text-white mb-6">Extracted Keywords</h3>
-                  <KeywordTable keywords={selected.keywords} />
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-white">Extracted Keywords</h3>
+                    {highlightedWord && (
+                      <button
+                        onClick={() => setHighlightedWord(null)}
+                        className="text-xs text-blue-300 hover:text-white flex items-center gap-1 border border-blue-500/50 px-2 py-1 rounded"
+                      >
+                        <X className="w-3 h-3" /> Clear Highlight
+                      </button>
+                    )}
+                  </div>
+                  <KeywordTable
+                    keywords={selected.keywords}
+                    onKeywordClick={(kw) => setHighlightedWord(kw)}
+                  />
                 </div>
               </>
             ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-export default function KeywordTable({ keywords }) {
+export default function KeywordTable({ keywords, onKeywordClick }) {
     if (!keywords || keywords.length === 0) {
         return (
             <div className="text-center p-8 bg-[#05052e] rounded-xl border border-dashed border-blue-500/50">
@@ -17,7 +17,7 @@ export default function KeywordTable({ keywords }) {
                 <thead className="bg-[#02021c]">
                     <tr>
                         <th className="px-6 py-4 text-left text-xs font-bold text-blue-300 uppercase tracking-wider">
-                            Keyword
+                            Keyword (Click to highlight)
                         </th>
                         <th className="px-6 py-4 text-left text-xs font-bold text-blue-300 uppercase tracking-wider">
                             Relevance Score
@@ -28,8 +28,12 @@ export default function KeywordTable({ keywords }) {
                     {keywords.map((kw, idx) => {
                         const percentage = Math.round((kw.score / maxScore) * 100);
                         return (
-                            <tr key={idx} className="hover:bg-blue-900/50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                            <tr
+                                key={idx}
+                                onClick={() => onKeywordClick && onKeywordClick(kw.keyword)}
+                                className="hover:bg-blue-900/60 transition-colors cursor-pointer group"
+                            >
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white group-hover:text-yellow-400 transition-colors">
                                     {kw.keyword}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-200">
